@@ -1,0 +1,7 @@
+package config
+
+const ARGON2ID_MEMORY uint32 = 64 * 1024
+const ARGON2ID_ITERATION uint32 = 3
+const ARGON2ID_PARALLELISM uint8 = 2
+const ARGON2ID_SALT_LENGTH uint32 = 16
+const ARGON2ID_KEY_LENGTH uint32 = 32
