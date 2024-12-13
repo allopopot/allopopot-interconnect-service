@@ -75,7 +75,7 @@ func (ac *AuthController) Login(c *fiber.Ctx) error {
 		log.Panicln("Cannot Generate JWT", err)
 	}
 
-	return c.JSON(fiber.Map{"data": fiber.Map{"token": signedString}})
+	return c.JSON(fiber.Map{"data": fiber.Map{"access_token": signedString}})
 }
 
 func (ac *AuthController) VerifyToken(c *fiber.Ctx) error {

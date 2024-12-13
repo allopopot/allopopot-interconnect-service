@@ -8,4 +8,5 @@ import (
 
 func V1(router fiber.Router) {
 	router.Route("/auth", v1.AuthRoutes)
+	router.Route("/user", v1.UserRoutes)
 }
