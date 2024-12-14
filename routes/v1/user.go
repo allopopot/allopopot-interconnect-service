@@ -13,4 +13,6 @@ func UserRoutes(router fiber.Router) {
 	router.Use(middleware.GateKeeper)
 
 	router.Get("/me", uc.Me)
+	router.Post("/setPassword", uc.SetPassword)
+	router.Post("/updateUser", uc.UpdateUser)
 }
