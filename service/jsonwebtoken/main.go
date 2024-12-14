@@ -26,5 +26,8 @@ func ValidateToken(tokenString string) (*AIMClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &AIMClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(config.JWT_SECRET), nil
 	})
-	return token.Claims.(*AIMClaims), err
+	if err != nil {
+		return nil, err
+	}
+	return token.Claims.(*AIMClaims), nil
 }
