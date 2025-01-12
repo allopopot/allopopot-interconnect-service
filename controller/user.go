@@ -53,7 +53,7 @@ func (uc *UserController) UpdateUser(c *fiber.Ctx) error {
 	user, _ := c.Locals("user").(*models.User)
 
 	if body.FirstName != "" {
-		user.LastName = body.FirstName
+		user.FirstName = body.FirstName
 	}
 	if body.Lastname != "" {
 		user.LastName = body.Lastname
