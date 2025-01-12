@@ -1,0 +1,20 @@
+meta {
+  name: Create Account
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/auth/createAccount
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "first_name":"Hello",
+    "last_name":"World",
+    "email":"admin@mail.com",
+    "password":"Admin@1234"
+  }
+}
