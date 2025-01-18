@@ -2,31 +2,47 @@ package dbcontext
 
 import (
 	"allopopot-interconnect-service/config"
-	"allopopot-interconnect-service/models"
+	"context"
+	"fmt"
 	"log"
 
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var DB *gorm.DB
+var DB *mongo.Database
+var UserModel *mongo.Collection
 
 func InitDb() {
+	bsonOpts := &options.BSONOptions{
+		UseJSONStructTags: true,
+		NilMapAsEmpty:     true,
+		NilSliceAsEmpty:   true,
+	}
 	log.Println("Database Connection Initializing")
-	db, err := gorm.Open(postgres.Open(config.DSN), &gorm.Config{})
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(config.MONGODB_URI).SetBSONOptions(bsonOpts))
 	if err != nil {
 		log.Panicln("Database Connection Failed")
 	}
-	DB = db
+	DB = client.Database(config.MONGODB_DATABASE_NAME)
 	log.Println("Database Connection Successful")
+	SetCollections()
+	CreateIndexes()
 }
 
-func Migrate() {
-	log.Println("Database Migration Initializing")
-	err := DB.AutoMigrate(&models.User{})
-	if err != nil {
-		log.Panicln("Database Migration Failed")
-	}
-	log.Println("Database Migration Successful")
+func SetCollections() {
+	UserModel = DB.Collection("users")
+}
 
+func CreateIndexes() {
+	indexModel := mongo.IndexModel{
+		Keys:    bson.D{{Key: "email", Value: 1}},
+		Options: options.Index().SetUnique(true),
+	}
+	name, err := UserModel.Indexes().CreateOne(context.TODO(), indexModel)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Name of Index Created: " + name)
 }

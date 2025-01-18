@@ -12,7 +12,6 @@ import (
 
 func main() {
 	dbcontext.InitDb()
-	dbcontext.Migrate()
 
 	app := fiber.New()
 	app.Use(cors.New())
