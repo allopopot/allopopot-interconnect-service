@@ -10,3 +10,6 @@ const DATABASE_PORT string = "5432"
 const DATABASE_SSL_MODE string = "disable"
 
 var DSN = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, DATABASE_PORT, DATABASE_SSL_MODE)
+
+var MONGODB_URI string = "mongodb://localhost:27017"
+var MONGODB_DATABASE_NAME string = "allopopot"

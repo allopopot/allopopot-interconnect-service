@@ -4,9 +4,12 @@ import (
 	"allopopot-interconnect-service/dbcontext"
 	"allopopot-interconnect-service/models"
 	"allopopot-interconnect-service/service/jsonwebtoken"
+	"context"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GateKeeper(c *fiber.Ctx) error {
@@ -26,8 +29,8 @@ func GateKeeper(c *fiber.Ctx) error {
 		})
 	}
 	u := new(models.User)
-	dbresult := dbcontext.DB.Where("email = ?", validatedToken.PrincipalEmail).First(&u)
-	if dbresult.RowsAffected == 0 {
+	dbresult := dbcontext.UserModel.FindOne(context.TODO(), bson.D{{Key: "email", Value: validatedToken.PrincipalEmail}}).Decode(&u)
+	if dbresult == mongo.ErrNoDocuments {
 		c.Status(fiber.StatusUnauthorized)
 		return c.JSON(fiber.Map{
 			"error": []string{"//////   GateKeeper Says: Not Authorized   //////"},

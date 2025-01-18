@@ -10,6 +10,9 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type AuthController struct{}
@@ -26,18 +29,19 @@ func (ac *AuthController) CreateAccount(c *fiber.Ctx) error {
 	u := new(models.User)
 	u.Email = body.Email
 
-	result := dbcontext.DB.First(&u, "email = ?", u.Email)
-	if result.RowsAffected > 0 {
+	resultA := dbcontext.UserModel.FindOne(c.Context(), bson.D{{Key: "email", Value: u.Email}}).Decode(&u)
+	if resultA != mongo.ErrNoDocuments {
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{"error": []string{"Account Already Exists"}})
 	}
+	u.ID = primitive.NewObjectID()
 	u.FirstName = body.FirstName
 	u.LastName = body.LastName
 	u.SetPassword(body.Password)
-	result = dbcontext.DB.Create(u)
-	if result.Error != nil {
+	_, err := dbcontext.UserModel.InsertOne(c.Context(), u)
+	if err != nil {
 		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{"error": []string{result.Error.Error()}})
+		return c.JSON(fiber.Map{"error": []string{err.Error()}})
 	}
 	return c.JSON(fiber.Map{"data": u})
 }
@@ -52,8 +56,8 @@ func (ac *AuthController) Login(c *fiber.Ctx) error {
 	}
 
 	u := new(models.User)
-	result := dbcontext.DB.First(u, "email = ?", body.Email)
-	if result.RowsAffected == 0 {
+	resultA := dbcontext.UserModel.FindOne(c.Context(), bson.D{{Key: "email", Value: body.Email}}).Decode(&u)
+	if resultA == mongo.ErrNoDocuments {
 		c.Status(fiber.StatusUnauthorized)
 		return c.JSON(fiber.Map{"error": []string{"Please check your credentials."}})
 	}
@@ -65,8 +69,8 @@ func (ac *AuthController) Login(c *fiber.Ctx) error {
 	}
 
 	claims := new(jsonwebtoken.AIMClaims)
-	claims.ID = string(rune(u.ID))
-	claims.PrincipalID = int(u.ID)
+	claims.ID = string(u.ID.Hex())
+	claims.PrincipalID = string(u.ID.Hex())
 	claims.PrincipalName = fmt.Sprintf("%s %s", u.FirstName, u.LastName)
 	claims.PrincipalEmail = u.Email
 	signedString, err := jsonwebtoken.GenerateToken(*claims)

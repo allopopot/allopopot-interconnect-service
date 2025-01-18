@@ -8,7 +8,7 @@ import (
 )
 
 type AIMClaims struct {
-	PrincipalID    int
+	PrincipalID    string
 	PrincipalName  string
 	PrincipalEmail string
 	jwt.RegisteredClaims

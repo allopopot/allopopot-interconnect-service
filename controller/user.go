@@ -6,6 +6,7 @@ import (
 	"allopopot-interconnect-service/models"
 
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type UserController struct{}
@@ -34,10 +35,17 @@ func (uc *UserController) SetPassword(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"error": []string{"Failed to verify password."}})
 	}
 	user.SetPassword(body.SetPassword)
-	dbResult := dbcontext.DB.Model(&user).Update("password", user.Password)
-	if dbResult.RowsAffected == 1 {
+	dbResult, err := dbcontext.UserModel.UpdateByID(c.Context(), user.ID, bson.D{{Key: "$set", Value: bson.D{{Key: "password", Value: user.Password}}}})
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{"error": []string{err.Error()}})
+	}
+
+	if dbResult.ModifiedCount == 1 {
+		c.Status(fiber.StatusOK)
 		return c.JSON(fiber.Map{"data": true})
 	} else {
+		c.Status(fiber.StatusNotModified)
 		return c.JSON(fiber.Map{"data": false})
 	}
 }
@@ -59,10 +67,16 @@ func (uc *UserController) UpdateUser(c *fiber.Ctx) error {
 		user.LastName = body.Lastname
 	}
 
-	dbResult := dbcontext.DB.Save(&user)
-	if dbResult.RowsAffected == 1 {
+	dbResult, err := dbcontext.UserModel.UpdateByID(c.Context(), user.ID, bson.D{{Key: "$set", Value: user}})
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{"error": []string{err.Error()}})
+	}
+	if dbResult.ModifiedCount == 1 {
+		c.Status(fiber.StatusOK)
 		return c.JSON(fiber.Map{"data": true})
 	} else {
+		c.Status(fiber.StatusNotModified)
 		return c.JSON(fiber.Map{"data": false})
 	}
 }

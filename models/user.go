@@ -4,15 +4,15 @@ import (
 	"allopopot-interconnect-service/service/passwordservice"
 	"log"
 
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type User struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email" gorm:"uniqueIndex"`
-	Password  string `json:"-"`
-	gorm.Model
+	ID        primitive.ObjectID `bson:"_id"`
+	FirstName string             `json:"first_name" bson:"first_name"`
+	LastName  string             `json:"last_name" bson:"last_name"`
+	Email     string             `json:"email" bson:"email"`
+	Password  string             `json:"-" bson:"password"`
 }
 
 func (u *User) SetPassword(password string) {
