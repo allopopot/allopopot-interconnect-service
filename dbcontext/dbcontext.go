@@ -3,7 +3,6 @@ package dbcontext
 import (
 	"allopopot-interconnect-service/config"
 	"context"
-	"fmt"
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -40,9 +39,9 @@ func CreateIndexes() {
 		Keys:    bson.D{{Key: "email", Value: 1}},
 		Options: options.Index().SetUnique(true),
 	}
-	name, err := UserModel.Indexes().CreateOne(context.TODO(), indexModel)
+	_, err := UserModel.Indexes().CreateOne(context.TODO(), indexModel)
 	if err != nil {
-		panic(err)
+		log.Panicln(err)
 	}
-	fmt.Println("Name of Index Created: " + name)
+	log.Println("Database Indexes Created Successfully")
 }

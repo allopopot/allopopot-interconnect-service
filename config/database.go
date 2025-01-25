@@ -1,4 +1,6 @@
 package config
 
-var MONGODB_URI string = "mongodb://localhost:27017"
-var MONGODB_DATABASE_NAME string = "allopopot"
+import "allopopot-interconnect-service/utility"
+
+var MONGODB_URI string = utility.ParseEnv("MONGODB_URI", false, "")
+var MONGODB_DATABASE_NAME string = utility.ParseEnv("MONGODB_DATABASE_NAME", true, "allopopot-services")
