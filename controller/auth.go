@@ -4,6 +4,8 @@ import (
 	"allopopot-interconnect-service/dbcontext"
 	"allopopot-interconnect-service/dto"
 	"allopopot-interconnect-service/models"
+	"allopopot-interconnect-service/service/emailqueue"
+	"allopopot-interconnect-service/service/emailtemplates"
 	"allopopot-interconnect-service/service/jsonwebtoken"
 	"fmt"
 	"log"
@@ -38,11 +40,14 @@ func (ac *AuthController) CreateAccount(c *fiber.Ctx) error {
 	u.FirstName = body.FirstName
 	u.LastName = body.LastName
 	u.SetPassword(body.Password)
+	u.GenerateRecoveryCode()
 	_, err := dbcontext.UserModel.InsertOne(c.Context(), u)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{"error": []string{err.Error()}})
 	}
+	ep := emailtemplates.GenerateWelcomeEmailTemplate(*u)
+	emailqueue.DispatchEmail(ep)
 	return c.JSON(fiber.Map{"data": u})
 }
 
