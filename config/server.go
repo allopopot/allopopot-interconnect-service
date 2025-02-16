@@ -1,8 +1,11 @@
 package config
 
-import "fmt"
+import (
+	"allopopot-interconnect-service/utility"
+	"fmt"
+)
 
-const SERVER_HOST string = "0.0.0.0"
-const SERVER_PORT string = "5000"
+var SERVER_HOST string = "0.0.0.0"
+var SERVER_PORT string = utility.ParseEnv("SERVER_PORT", true, "4000")
 
 var SERVER_URI = fmt.Sprintf("%s:%s", SERVER_HOST, SERVER_PORT)

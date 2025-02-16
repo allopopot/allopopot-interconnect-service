@@ -13,6 +13,7 @@ To build the project run:
 
 | Name                  | Required | Default            |
 | --------------------- | -------- | ------------------ |
+| SERVER_PORT           | false    | 4000               |
 | MONGODB_URI           | true     | -                  |
 | MONGODB_DATABASE_NAME | false    | allopopot-services |
 | AMQP_HOST             | false    | -                  |
