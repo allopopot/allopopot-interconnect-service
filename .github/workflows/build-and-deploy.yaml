@@ -32,6 +32,7 @@ jobs:
 
   deploy-image:
     runs-on: self-hosted
+    needs: [build-image]
     env:
       CONTAINER_REGISTRY_URL: ${{ secrets.CONTAINER_REGISTRY_URL }}
       SERVICE_NAME: allopopot-interconnect-service
@@ -39,9 +40,11 @@ jobs:
     steps: 
     - name: Stop Current Process
       run: podman stop $SERVICE_NAME
+      continue-on-error: true
 
     - name: Delete Current Process
       run: podman rm $SERVICE_NAME
+      continue-on-error: true
 
     - name: Pull Image from Repository
       run: podman pull $CONTAINER_REGISTRY_URL/$SERVICE_NAME:latest
