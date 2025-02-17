@@ -28,7 +28,7 @@ jobs:
       run: podman build -f=./Containerfile -t $CONTAINER_REGISTRY_URL/$SERVICE_NAME
 
     - name: Push Container to Registry
-      run: podman push $CONTAINER_REGISTRY_URL/$SERVICE_NAME
+      run: podman push --tls-verify=false $CONTAINER_REGISTRY_URL/$SERVICE_NAME
 
   deploy-image:
     runs-on: self-hosted
