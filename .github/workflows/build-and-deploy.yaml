@@ -50,4 +50,4 @@ jobs:
       run: podman pull --tls-verify=false $CONTAINER_REGISTRY_URL/$SERVICE_NAME:latest
     
     - name: Start Container
-      run: podman run -id --name $SERVICE_NAME -p 4000:4000/tcp --env=MONGODB_URI=$MONGODB_URI $CONTAINER_REGISTRY_URL/allopopot-interconnect-service 
+      run: podman run -id --name $SERVICE_NAME -p 4000:4000/tcp --network=host --env=MONGODB_URI=$MONGODB_URI $CONTAINER_REGISTRY_URL/allopopot-interconnect-service 
