@@ -1,0 +1,52 @@
+name: Build Image and Deploy to Container
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-image: 
+    runs-on: self-hosted
+    env:
+      CONTAINER_REGISTRY_URL: ${{ secrets.CONTAINER_REGISTRY_URL }}
+      SERVICE_NAME: allopopot-interconnect-service
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Golang
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23'
+
+    - name: Build Solution
+      run: go build -o $SERVICE_NAME
+  
+    - name: Build Container using Podman
+      run: podman build -f=./Containerfile -t $CONTAINER_REGISTRY_URL/$SERVICE_NAME
+
+    - name: Push Container to Registry
+      run: podman push --tls-verify=false $CONTAINER_REGISTRY_URL/$SERVICE_NAME
+
+  deploy-image:
+    runs-on: self-hosted
+    needs: [build-image]
+    env:
+      CONTAINER_REGISTRY_URL: ${{ secrets.CONTAINER_REGISTRY_URL }}
+      SERVICE_NAME: allopopot-interconnect-service
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+    steps: 
+    - name: Stop Current Process
+      run: podman stop $SERVICE_NAME
+      continue-on-error: true
+
+    - name: Delete Current Process
+      run: podman rm $SERVICE_NAME
+      continue-on-error: true
+
+    - name: Pull Image from Repository
+      run: podman pull --tls-verify=false $CONTAINER_REGISTRY_URL/$SERVICE_NAME:latest
+    
+    - name: Start Container
+      run: podman run -id --name $SERVICE_NAME -p 4000:4000/tcp --network=host --env=MONGODB_URI=$MONGODB_URI $CONTAINER_REGISTRY_URL/allopopot-interconnect-service 
