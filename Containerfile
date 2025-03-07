@@ -2,10 +2,10 @@ FROM docker.io/golang
 
 WORKDIR /app
 
-COPY ./ /app
+COPY ./ ./
 
 EXPOSE 4000
 
-RUN ["go", "build"]
+RUN go build -o allopopot-interconnect-service
 
-ENTRYPOINT [ "allopopot-interconnect-service" ]
+CMD [ "./allopopot-interconnect-service" ]
