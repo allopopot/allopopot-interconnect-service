@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
@@ -41,6 +42,7 @@ func (ac *AuthController) CreateAccount(c *fiber.Ctx) error {
 	u.LastName = body.LastName
 	u.SetPassword(body.Password)
 	u.GenerateRecoveryCode()
+	u.CreatedTime = time.Now()
 	_, err := dbcontext.UserModel.InsertOne(c.Context(), u)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)

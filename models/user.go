@@ -3,6 +3,7 @@ package models
 import (
 	"allopopot-interconnect-service/service/passwordservice"
 	"log"
+	"time"
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,6 +16,7 @@ type User struct {
 	Email        string             `json:"email" bson:"email"`
 	Password     string             `json:"-" bson:"password"`
 	RecoveryCode string             `json:"-" bson:"recovery_code"`
+	CreatedTime  time.Time          `json:"created_time" bson:"created_time"`
 }
 
 func (u *User) SetPassword(password string) {
