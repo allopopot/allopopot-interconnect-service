@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"allopopot-interconnect-service/config"
 	"allopopot-interconnect-service/dbcontext"
 	"allopopot-interconnect-service/dto"
 	"allopopot-interconnect-service/models"
@@ -80,13 +81,20 @@ func (ac *AuthController) Login(c *fiber.Ctx) error {
 	claims.PrincipalID = string(u.ID.Hex())
 	claims.PrincipalName = fmt.Sprintf("%s %s", u.FirstName, u.LastName)
 	claims.PrincipalEmail = u.Email
-	signedString, err := jsonwebtoken.GenerateToken(*claims)
-
+	signedStringAccessToken, err := jsonwebtoken.GenerateAccessToken(*claims)
 	if err != nil {
-		log.Panicln("Cannot Generate JWT", err)
+		log.Panicln("Cannot Generate Access Token", err)
+	}
+	signedStringRefreshToken, err := jsonwebtoken.GenerateRefreshToken(*claims)
+	if err != nil {
+		log.Panicln("Cannot Generate Refresh Token", err)
 	}
 
-	return c.JSON(fiber.Map{"data": fiber.Map{"access_token": signedString}})
+	return c.JSON(fiber.Map{"data": fiber.Map{
+		"access_token":         signedStringAccessToken,
+		"access_token_expiry":  time.Now().Add(time.Minute * config.JWT_ACCESS_EXPIRY_MINUTES).UTC(),
+		"refresh_token":        signedStringRefreshToken,
+		"refresh_token_expiry": time.Now().Add(time.Minute * config.JWT_REFRESH_EXPIRY_MINUTES).UTC()}})
 }
 
 func (ac *AuthController) VerifyToken(c *fiber.Ctx) error {
@@ -106,4 +114,36 @@ func (ac *AuthController) VerifyToken(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"error": []string{"Invalid Token"}})
 	}
 	return c.JSON(fiber.Map{"data": claims})
+}
+
+func (ac *AuthController) RefreshToken(c *fiber.Ctx) error {
+	body := new(dto.RefreshToken)
+	c.BodyParser(body)
+
+	validationResult := body.Validate()
+	if len(validationResult) != 0 {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{"error": validationResult})
+	}
+
+	claims, err := jsonwebtoken.ValidateToken(body.RefreshToken)
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{"error": []string{"Invalid Token"}})
+	}
+
+	signedStringAccessToken, err := jsonwebtoken.GenerateAccessToken(*claims)
+	if err != nil {
+		log.Panicln("Cannot Generate Access Token", err)
+	}
+	signedStringRefreshToken, err := jsonwebtoken.GenerateRefreshToken(*claims)
+	if err != nil {
+		log.Panicln("Cannot Generate Refresh Token", err)
+	}
+
+	return c.JSON(fiber.Map{"data": fiber.Map{
+		"access_token":         signedStringAccessToken,
+		"access_token_expiry":  time.Now().Add(time.Minute * config.JWT_ACCESS_EXPIRY_MINUTES).UTC(),
+		"refresh_token":        signedStringRefreshToken,
+		"refresh_token_expiry": time.Now().Add(time.Minute * config.JWT_REFRESH_EXPIRY_MINUTES).UTC()}})
 }

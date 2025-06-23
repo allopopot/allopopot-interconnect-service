@@ -28,6 +28,12 @@ func GateKeeper(c *fiber.Ctx) error {
 			"error": []string{"//////   GateKeeper Says: Not Authorized   //////"},
 		})
 	}
+	if validatedToken.TokenType != "access" {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"error": []string{"//////   GateKeeper Says: Refresh Token Not Allowed   //////"},
+		})
+	}
 	u := new(models.User)
 	dbresult := dbcontext.UserModel.FindOne(context.TODO(), bson.D{{Key: "email", Value: validatedToken.PrincipalEmail}}).Decode(&u)
 	if dbresult == mongo.ErrNoDocuments {

@@ -52,3 +52,19 @@ func (a *Login) Validate() []string {
 	}
 	return validationErrors
 }
+
+type RefreshToken struct {
+	RefreshToken string `json:"refresh_token" validate:"required,min=8"`
+}
+
+func (a *RefreshToken) Validate() []string {
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	err := validate.Struct(a)
+	var validationErrors []string
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			validationErrors = append(validationErrors, fmt.Sprintf("Field '%s' failed validation: %s", err.Field(), err.Tag()))
+		}
+	}
+	return validationErrors
+}

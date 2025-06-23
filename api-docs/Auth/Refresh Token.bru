@@ -1,19 +1,18 @@
 meta {
-  name: Login
+  name: Refresh Token
   type: http
-  seq: 2
+  seq: 4
 }
 
 post {
-  url: {{baseUrl}}/v1/auth/login
+  url: {{baseUrl}}/v1/auth/refreshToken
   body: json
   auth: none
 }
 
 body:json {
   {
-    "email":"admin@mail.com",
-    "password":"Admin@1234"
+    "refresh_token":"{{refresh_token}}"
   }
 }
 

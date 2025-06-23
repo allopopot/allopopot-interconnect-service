@@ -8,15 +8,17 @@ import (
 )
 
 type AIMClaims struct {
+	TokenType      string
 	PrincipalID    string
 	PrincipalName  string
 	PrincipalEmail string
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(claims AIMClaims) (string, error) {
-	claims.ExpiresAt = jwt.NewNumericDate(time.Now().UTC().Add(time.Minute * config.JWT_EXPIRY_MINUTES))
+func GenerateAccessToken(claims AIMClaims) (string, error) {
+	claims.ExpiresAt = jwt.NewNumericDate(time.Now().UTC().Add(time.Minute * config.JWT_ACCESS_EXPIRY_MINUTES))
 	claims.Issuer = config.JWT_ISSUER
+	claims.TokenType = "access"
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedString, err := token.SignedString([]byte(config.JWT_SECRET))
 	return signedString, err
@@ -30,4 +32,13 @@ func ValidateToken(tokenString string) (*AIMClaims, error) {
 		return nil, err
 	}
 	return token.Claims.(*AIMClaims), nil
+}
+
+func GenerateRefreshToken(claims AIMClaims) (string, error) {
+	claims.ExpiresAt = jwt.NewNumericDate(time.Now().UTC().Add(time.Minute * config.JWT_REFRESH_EXPIRY_MINUTES))
+	claims.Issuer = config.JWT_ISSUER
+	claims.TokenType = "refresh"
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	signedString, err := token.SignedString([]byte(config.JWT_SECRET))
+	return signedString, err
 }
