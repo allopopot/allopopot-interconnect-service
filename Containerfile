@@ -1,11 +1,9 @@
-FROM docker.io/golang
+FROM docker.io/fedora:latest
 
 WORKDIR /app
 
-COPY ./ ./
+COPY ./allopopot-interconnect-service ./allopopot-interconnect-service
 
 EXPOSE 4000
-
-RUN go build -o allopopot-interconnect-service
 
 CMD [ "./allopopot-interconnect-service" ]
