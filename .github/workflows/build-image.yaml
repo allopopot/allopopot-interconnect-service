@@ -1,4 +1,4 @@
-name: Build Image and Deploy to Container
+name: Build Image and Push to Registry
 
 on:
   push:
