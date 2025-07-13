@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-image:
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     env:
       CONTAINER_REGISTRY_URL: ${{ secrets.CONTAINER_REGISTRY_URL }}
       SERVICE_NAME: allopopot-interconnect-service
