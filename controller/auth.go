@@ -17,6 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type AuthController struct{}
@@ -90,11 +91,22 @@ func (ac *AuthController) Login(c *fiber.Ctx) error {
 		log.Panicln("Cannot Generate Refresh Token", err)
 	}
 
+	refreshTokenExpiry := time.Now().Add(time.Minute * config.JWT_REFRESH_EXPIRY_MINUTES).UTC()
+
+	t := new(models.Token)
+	t.CreatedTime = time.Now()
+	t.Type = "refresh"
+	t.Token = signedStringRefreshToken
+	t.UserID = u.ID
+	t.ExpiryTime = refreshTokenExpiry
+	dbcontext.TokenModel.ReplaceOne(c.Context(), bson.D{{Key: "user_id", Value: u.ID}}, t, options.Replace().SetUpsert(true))
+
 	return c.JSON(fiber.Map{"data": fiber.Map{
 		"access_token":         signedStringAccessToken,
 		"access_token_expiry":  time.Now().Add(time.Minute * config.JWT_ACCESS_EXPIRY_MINUTES).UTC(),
 		"refresh_token":        signedStringRefreshToken,
-		"refresh_token_expiry": time.Now().Add(time.Minute * config.JWT_REFRESH_EXPIRY_MINUTES).UTC()}})
+		"refresh_token_expiry": refreshTokenExpiry,
+	}})
 }
 
 func (ac *AuthController) VerifyToken(c *fiber.Ctx) error {
@@ -132,6 +144,26 @@ func (ac *AuthController) RefreshToken(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"error": []string{"Invalid Token"}})
 	}
 
+	t := new(models.Token)
+	claimIdInObjectId, err := primitive.ObjectIDFromHex(claims.ID)
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{"error": []string{"Invalid User ID"}})
+	}
+
+	findToken := dbcontext.TokenModel.FindOne(c.Context(), bson.D{{"user_id", claimIdInObjectId}, {"expiry_time", bson.D{{"$gte", time.Now()}}}}).Decode(&t)
+	if findToken != nil {
+		if findToken == mongo.ErrNoDocuments {
+			c.Status(fiber.StatusBadRequest)
+			return c.JSON(fiber.Map{"error": []string{"Token Expired"}})
+		}
+	}
+
+	if t.Token != body.RefreshToken {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{"error": []string{"Invalid Token"}})
+	}
+
 	signedStringAccessToken, err := jsonwebtoken.GenerateAccessToken(*claims)
 	if err != nil {
 		log.Panicln("Cannot Generate Access Token", err)
@@ -141,9 +173,16 @@ func (ac *AuthController) RefreshToken(c *fiber.Ctx) error {
 		log.Panicln("Cannot Generate Refresh Token", err)
 	}
 
+	refreshTokenExpiry := time.Now().Add(time.Minute * config.JWT_REFRESH_EXPIRY_MINUTES).UTC()
+
+	t.CreatedTime = time.Now()
+	t.Token = signedStringRefreshToken
+	t.ExpiryTime = refreshTokenExpiry
+	dbcontext.TokenModel.ReplaceOne(c.Context(), bson.D{{Key: "user_id", Value: t.UserID}}, t, options.Replace().SetUpsert(true))
+
 	return c.JSON(fiber.Map{"data": fiber.Map{
 		"access_token":         signedStringAccessToken,
 		"access_token_expiry":  time.Now().Add(time.Minute * config.JWT_ACCESS_EXPIRY_MINUTES).UTC(),
 		"refresh_token":        signedStringRefreshToken,
-		"refresh_token_expiry": time.Now().Add(time.Minute * config.JWT_REFRESH_EXPIRY_MINUTES).UTC()}})
+		"refresh_token_expiry": refreshTokenExpiry}})
 }
