@@ -91,6 +91,7 @@ func (ac *AuthController) Login(c *fiber.Ctx) error {
 		log.Panicln("Cannot Generate Refresh Token", err)
 	}
 
+	accessTokenExpiry := time.Now().Add(time.Minute * config.JWT_ACCESS_EXPIRY_MINUTES).UTC()
 	refreshTokenExpiry := time.Now().Add(time.Minute * config.JWT_REFRESH_EXPIRY_MINUTES).UTC()
 
 	t := new(models.Token)
@@ -103,7 +104,7 @@ func (ac *AuthController) Login(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"data": fiber.Map{
 		"access_token":         signedStringAccessToken,
-		"access_token_expiry":  time.Now().Add(time.Minute * config.JWT_ACCESS_EXPIRY_MINUTES).UTC(),
+		"access_token_expiry":  accessTokenExpiry,
 		"refresh_token":        signedStringRefreshToken,
 		"refresh_token_expiry": refreshTokenExpiry,
 	}})
@@ -151,7 +152,7 @@ func (ac *AuthController) RefreshToken(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"error": []string{"Invalid User ID"}})
 	}
 
-	findToken := dbcontext.TokenModel.FindOne(c.Context(), bson.D{{"user_id", claimIdInObjectId}, {"expiry_time", bson.D{{"$gte", time.Now()}}}}).Decode(&t)
+	findToken := dbcontext.TokenModel.FindOne(c.Context(), bson.D{{Key: "user_id", Value: claimIdInObjectId}, {Key: "expiry_time", Value: bson.D{{Key: "$gte", Value: time.Now()}}}}).Decode(&t)
 	if findToken != nil {
 		if findToken == mongo.ErrNoDocuments {
 			c.Status(fiber.StatusBadRequest)
@@ -173,6 +174,7 @@ func (ac *AuthController) RefreshToken(c *fiber.Ctx) error {
 		log.Panicln("Cannot Generate Refresh Token", err)
 	}
 
+	accessTokenExpiry := time.Now().Add(time.Minute * config.JWT_ACCESS_EXPIRY_MINUTES).UTC()
 	refreshTokenExpiry := time.Now().Add(time.Minute * config.JWT_REFRESH_EXPIRY_MINUTES).UTC()
 
 	t.CreatedTime = time.Now()
@@ -182,7 +184,36 @@ func (ac *AuthController) RefreshToken(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"data": fiber.Map{
 		"access_token":         signedStringAccessToken,
-		"access_token_expiry":  time.Now().Add(time.Minute * config.JWT_ACCESS_EXPIRY_MINUTES).UTC(),
+		"access_token_expiry":  accessTokenExpiry,
 		"refresh_token":        signedStringRefreshToken,
-		"refresh_token_expiry": refreshTokenExpiry}})
+		"refresh_token_expiry": refreshTokenExpiry,
+	}})
+}
+
+func (ac *AuthController) Logout(c *fiber.Ctx) error {
+	body := new(dto.RefreshToken)
+	c.BodyParser(body)
+
+	validationResult := body.Validate()
+	if len(validationResult) != 0 {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{"error": validationResult})
+	}
+
+	claims, err := jsonwebtoken.ValidateToken(body.RefreshToken)
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{"error": []string{"Invalid Token"}})
+	}
+
+	claimIdInObjectId, err := primitive.ObjectIDFromHex(claims.ID)
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{"error": []string{"Invalid User ID"}})
+	}
+
+	dbcontext.TokenModel.DeleteMany(c.Context(), bson.M{"user_id": claimIdInObjectId})
+
+	c.ClearCookie("access_token", "refresh_token")
+	return c.JSON(fiber.Map{"data": "logout"})
 }

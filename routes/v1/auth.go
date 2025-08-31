@@ -12,4 +12,5 @@ func AuthRoutes(router fiber.Router) {
 	router.Post("/login", ac.Login)
 	router.Get("/verifyToken", ac.VerifyToken)
 	router.Post("/refreshToken", ac.RefreshToken)
+	router.Post("/logout", ac.Logout)
 }
