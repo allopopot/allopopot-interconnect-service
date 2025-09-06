@@ -13,14 +13,18 @@ import (
 )
 
 func GateKeeper(c *fiber.Ctx) error {
-	tokenParts := strings.Split(c.Get("authorization"), " ")
-	if len(tokenParts) != 2 {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{
-			"error": []string{"//////   GateKeeper Says: Not Authorized   //////"},
-		})
+	var token string = ""
+	tokenFromCookie := c.Cookies("access_token")
+	tokenFromAuthHeader := strings.Split(c.Get("authorization"), " ")
+
+	if len(tokenFromCookie) > 0 {
+		token = tokenFromCookie
 	}
-	token := tokenParts[1]
+
+	if len(tokenFromAuthHeader) == 2 {
+		token = tokenFromAuthHeader[1]
+	}
+
 	validatedToken, err := jsonwebtoken.ValidateToken(token)
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
