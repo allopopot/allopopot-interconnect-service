@@ -5,6 +5,7 @@ import (
 	"allopopot-interconnect-service/dbcontext"
 	"allopopot-interconnect-service/routes"
 	"allopopot-interconnect-service/service/emailqueue"
+	"strings"
 
 	"github.com/gofiber/fiber/v2/middleware/cors"
 
@@ -16,7 +17,10 @@ func main() {
 	emailqueue.QueueConnect()
 
 	app := fiber.New()
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     strings.Join(config.CORS_ORIGINS, ","),
+		AllowCredentials: true,
+	}))
 
 	app.Get("/ping", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "pong"})
