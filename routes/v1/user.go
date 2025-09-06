@@ -14,5 +14,5 @@ func UserRoutes(router fiber.Router) {
 
 	router.Get("/me", uc.Me)
 	router.Post("/setPassword", uc.SetPassword)
-	router.Post("/updateUser", uc.UpdateUser)
+	router.Patch("/updateUser", uc.UpdateUser)
 }

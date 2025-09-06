@@ -4,7 +4,7 @@ meta {
   seq: 3
 }
 
-post {
+patch {
   url: {{baseUrl}}/v1/user/updateUser
   body: json
   auth: inherit
@@ -12,6 +12,7 @@ post {
 
 body:json {
   {
-    "first_name":"Wazzap"
+    "first_name":"First Name",
+    "last_name":"Last Name"
   }
 }
