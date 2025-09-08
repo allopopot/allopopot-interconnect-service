@@ -215,5 +215,39 @@ func (ac *AuthController) Logout(c *fiber.Ctx) error {
 	dbcontext.TokenModel.DeleteMany(c.Context(), bson.M{"user_id": claimIdInObjectId})
 
 	c.ClearCookie("access_token", "refresh_token")
-	return c.JSON(fiber.Map{"data": "logout"})
+	return c.JSON(fiber.Map{"data": true})
+}
+
+func (ac *AuthController) DeleteAccount(c *fiber.Ctx) error {
+
+	access_token := ""
+
+	tokenFromCookie := c.Cookies("access_token")
+	tokenFromAuthHeader := strings.Split(c.Get("authorization"), " ")
+
+	if len(tokenFromCookie) > 0 {
+		access_token = tokenFromCookie
+	}
+
+	if len(tokenFromAuthHeader) == 2 {
+		access_token = tokenFromAuthHeader[1]
+	}
+
+	claims, err := jsonwebtoken.ValidateToken(access_token)
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{"error": []string{"Invalid Token"}})
+	}
+
+	claimIdInObjectId, err := primitive.ObjectIDFromHex(claims.ID)
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{"error": []string{"Invalid User ID"}})
+	}
+
+	dbcontext.UserModel.DeleteOne(c.Context(), bson.M{"_id": claimIdInObjectId})
+	dbcontext.TokenModel.DeleteMany(c.Context(), bson.M{"user_id": claimIdInObjectId})
+
+	c.ClearCookie("access_token", "refresh_token")
+	return c.JSON(fiber.Map{"data": true})
 }
