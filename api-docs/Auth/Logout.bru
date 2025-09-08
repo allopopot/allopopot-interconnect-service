@@ -15,8 +15,3 @@ body:json {
     "refresh_token":"{{refresh_token}}"
   }
 }
-
-script:post-response {
-  bru.setEnvVar("access_token",res.body.data.access_token)
-  bru.setEnvVar("refresh_token",res.body.data.refresh_token)
-}
