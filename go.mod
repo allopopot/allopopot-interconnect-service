@@ -4,7 +4,7 @@ go 1.23.3
 
 require (
 	github.com/go-playground/validator/v10 v10.26.0
-	github.com/gofiber/fiber/v2 v2.52.8
+	github.com/gofiber/fiber/v2 v2.52.9
 )
 
 require (
