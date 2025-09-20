@@ -102,6 +102,18 @@ func (ac *AuthController) Login(c *fiber.Ctx) error {
 	t.ExpiryTime = refreshTokenExpiry
 	dbcontext.TokenModel.ReplaceOne(c.Context(), bson.D{{Key: "user_id", Value: u.ID}}, t, options.Replace().SetUpsert(true))
 
+	c.Cookie(&fiber.Cookie{
+		Name:    "access_token",
+		Value:   signedStringAccessToken,
+		Expires: accessTokenExpiry,
+	})
+
+	c.Cookie(&fiber.Cookie{
+		Name:    "refresh_token",
+		Value:   signedStringRefreshToken,
+		Expires: refreshTokenExpiry,
+	})
+
 	return c.JSON(fiber.Map{"data": fiber.Map{
 		"access_token":         signedStringAccessToken,
 		"access_token_expiry":  accessTokenExpiry,
@@ -182,6 +194,18 @@ func (ac *AuthController) RefreshToken(c *fiber.Ctx) error {
 	t.ExpiryTime = refreshTokenExpiry
 	dbcontext.TokenModel.ReplaceOne(c.Context(), bson.D{{Key: "user_id", Value: t.UserID}}, t, options.Replace().SetUpsert(true))
 
+	c.Cookie(&fiber.Cookie{
+		Name:    "access_token",
+		Value:   signedStringAccessToken,
+		Expires: accessTokenExpiry,
+	})
+
+	c.Cookie(&fiber.Cookie{
+		Name:    "refresh_token",
+		Value:   signedStringRefreshToken,
+		Expires: refreshTokenExpiry,
+	})
+
 	return c.JSON(fiber.Map{"data": fiber.Map{
 		"access_token":         signedStringAccessToken,
 		"access_token_expiry":  accessTokenExpiry,
@@ -193,6 +217,17 @@ func (ac *AuthController) RefreshToken(c *fiber.Ctx) error {
 func (ac *AuthController) Logout(c *fiber.Ctx) error {
 	body := new(dto.RefreshToken)
 	c.BodyParser(body)
+
+	c.Cookie(&fiber.Cookie{
+		Name:    "access_token",
+		Value:   "",
+		Expires: time.Now(),
+	})
+	c.Cookie(&fiber.Cookie{
+		Name:    "refresh_token",
+		Value:   "",
+		Expires: time.Now(),
+	})
 
 	validationResult := body.Validate()
 	if len(validationResult) != 0 {
@@ -214,7 +249,6 @@ func (ac *AuthController) Logout(c *fiber.Ctx) error {
 
 	dbcontext.TokenModel.DeleteMany(c.Context(), bson.M{"user_id": claimIdInObjectId})
 
-	c.ClearCookie("access_token", "refresh_token")
 	return c.JSON(fiber.Map{"data": true})
 }
 
@@ -248,6 +282,15 @@ func (ac *AuthController) DeleteAccount(c *fiber.Ctx) error {
 	dbcontext.UserModel.DeleteOne(c.Context(), bson.M{"_id": claimIdInObjectId})
 	dbcontext.TokenModel.DeleteMany(c.Context(), bson.M{"user_id": claimIdInObjectId})
 
-	c.ClearCookie("access_token", "refresh_token")
+	c.Cookie(&fiber.Cookie{
+		Name:    "access_token",
+		Value:   "",
+		Expires: time.Now(),
+	})
+	c.Cookie(&fiber.Cookie{
+		Name:    "refresh_token",
+		Value:   "",
+		Expires: time.Now(),
+	})
 	return c.JSON(fiber.Map{"data": true})
 }

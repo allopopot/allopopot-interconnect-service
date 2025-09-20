@@ -77,6 +77,6 @@ func (uc *UserController) UpdateUser(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"data": true})
 	} else {
 		c.Status(fiber.StatusNotModified)
-		return c.JSON(fiber.Map{"data": false})
+		return c.JSON(fiber.Map{"error": []string{"Data not modified."}})
 	}
 }

@@ -13,7 +13,3 @@ type Token struct {
 	CreatedTime time.Time          `json:"created_time" bson:"created_time"`
 	ExpiryTime  time.Time          `json:"expiry_time" bson:"expiry_time"`
 }
-
-func (t *Token) StoreToken(t_type string, token string) {
-
-}
