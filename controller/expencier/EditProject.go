@@ -35,11 +35,9 @@ func (a *EditProjectBody) Validate() []string {
 }
 
 func EditProject(c *fiber.Ctx) error {
-
-	id := c.Params("id", "")
-
 	auth := c.Locals("user").(*models.User)
 
+	id := c.Params("id", "")
 	idInObjectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
@@ -57,7 +55,10 @@ func EditProject(c *fiber.Ctx) error {
 	axFilter := bson.D{{Key: "_id", Value: idInObjectId}, {Key: "user_id", Value: auth.ID}}
 	axResult, err := dbcontext.ExpencierProjectsModel.UpdateOne(c.Context(), axFilter, bson.D{{Key: "$set", Value: bson.D{{Key: "name", Value: body.Name}, {Key: "description", Value: body.Description}, {Key: "sub_lists", Value: body.SubLists}}}})
 
-	if axResult.ModifiedCount > 0 {
+	bxFilter := bson.D{{Key: "project_id", Value: idInObjectId}, {Key: "user_id", Value: auth.ID}, {Key: "sub_list", Value: bson.D{{Key: "$nin", Value: body.SubLists}}}}
+	bxResult, err := dbcontext.ExpencierTransactionsModel.UpdateMany(c.Context(), bxFilter, bson.D{{Key: "$set", Value: bson.D{{Key: "sub_list", Value: ""}}}})
+
+	if axResult.ModifiedCount > 0 || bxResult.ModifiedCount > 0 {
 		c.Status(fiber.StatusOK)
 		return c.JSON(fiber.Map{"data": true})
 	} else {
