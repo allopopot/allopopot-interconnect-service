@@ -13,6 +13,8 @@ import (
 var DB *mongo.Database
 var UserModel *mongo.Collection
 var TokenModel *mongo.Collection
+var ExpencierProjectsModel *mongo.Collection
+var ExpencierTransactionsModel *mongo.Collection
 
 func InitDb() {
 	bsonOpts := &options.BSONOptions{
@@ -34,6 +36,8 @@ func InitDb() {
 func SetCollections() {
 	UserModel = DB.Collection("users")
 	TokenModel = DB.Collection("tokens")
+	ExpencierProjectsModel = DB.Collection("expencier_projects")
+	ExpencierTransactionsModel = DB.Collection("expencier_transactions")
 }
 
 func CreateIndexes() {

@@ -1,0 +1,20 @@
+meta {
+  name: Delete Project
+  type: http
+  seq: 2
+}
+
+delete {
+  url: {{baseUrl}}/v1/expencier/project/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 695a00003133eaaa2be14f38
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -7,6 +7,7 @@ import (
 )
 
 type Token struct {
+	ID          primitive.ObjectID `bson:"_id" json:"id"`
 	Type        string             `json:"type" bson:"type"`
 	Token       string             `json:"token" bson:"token"`
 	UserID      primitive.ObjectID `json:"user_id" bson:"user_id"`

@@ -1,0 +1,22 @@
+meta {
+  name: Get Projects
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/v1/expencier/project?skip=0&limit=10
+  body: none
+  auth: inherit
+}
+
+params:query {
+  skip: 0
+  limit: 10
+  ~id: 695a0cd0ea60d125fd3d002c
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
