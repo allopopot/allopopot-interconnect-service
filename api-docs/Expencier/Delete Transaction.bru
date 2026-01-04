@@ -1,0 +1,21 @@
+meta {
+  name: Delete Transaction
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseUrl}}/v1/expencier/project/:id/transaction/:tid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  tid: 695a4830556a9c6e8d68b372
+  id: 695a480d556a9c6e8d68b371
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

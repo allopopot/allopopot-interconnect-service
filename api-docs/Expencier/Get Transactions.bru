@@ -1,0 +1,26 @@
+meta {
+  name: Get Transactions
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/v1/expencier/project/:id/transaction
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~skip: 0
+  ~limit: 10
+  ~id: 695a0cd0ea60d125fd3d002c
+}
+
+params:path {
+  id: 695a480d556a9c6e8d68b371
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

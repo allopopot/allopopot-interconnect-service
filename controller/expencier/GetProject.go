@@ -11,7 +11,7 @@ import (
 )
 
 func GetProject(c *fiber.Ctx) error {
-	id := c.Query("id", "")
+	id := c.Query("pid", "")
 	skip := c.QueryInt("skip", 0)
 	limit := c.QueryInt("limit", 10)
 

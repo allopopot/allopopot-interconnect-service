@@ -1,0 +1,32 @@
+meta {
+  name: Create Transaction
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/v1/expencier/project/:id/transaction
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 695a480d556a9c6e8d68b371
+}
+
+body:json {
+  {
+    "description":"expense 1",
+    "sub_list":"type 1",
+    "amount":-5000
+  }
+}
+
+vars:pre-request {
+  id: 695a480d556a9c6e8d68b371
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

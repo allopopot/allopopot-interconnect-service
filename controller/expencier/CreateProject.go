@@ -59,5 +59,5 @@ func CreateProject(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"error": []string{err.Error()}})
 	}
 
-	return c.JSON(fiber.Map{"data": fiber.Map{"project": project}})
+	return c.JSON(fiber.Map{"data": project})
 }

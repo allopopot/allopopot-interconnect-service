@@ -37,7 +37,7 @@ func (a *EditProjectBody) Validate() []string {
 func EditProject(c *fiber.Ctx) error {
 	auth := c.Locals("user").(*models.User)
 
-	id := c.Params("id", "")
+	id := c.Params("pid", "")
 	idInObjectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)

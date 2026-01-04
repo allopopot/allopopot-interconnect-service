@@ -1,0 +1,29 @@
+meta {
+  name: Edit Transaction
+  type: http
+  seq: 7
+}
+
+patch {
+  url: {{baseUrl}}/v1/expencier/project/:id/transaction/:tid
+  body: json
+  auth: inherit
+}
+
+params:path {
+  tid: 695a916bc9aa63064a12a442
+  id: 695a480d556a9c6e8d68b371
+}
+
+body:json {
+  {
+    "description":"Main Income Starting Point",
+    "sub_list":"Just Income",
+    "amount":1000000
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

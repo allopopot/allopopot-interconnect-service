@@ -10,7 +10,7 @@ import (
 )
 
 func DeleteProject(c *fiber.Ctx) error {
-	id := c.Params("id", "")
+	id := c.Params("pid", "")
 
 	auth := c.Locals("user").(*models.User)
 
