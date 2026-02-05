@@ -6,6 +6,7 @@ import (
 	"allopopot-interconnect-service/service/jsonwebtoken"
 	"context"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
@@ -28,6 +29,16 @@ func GateKeeper(c *fiber.Ctx) error {
 	validatedToken, err := jsonwebtoken.ValidateToken(token)
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
+		c.Cookie(&fiber.Cookie{
+			Name:    "access_token",
+			Value:   "",
+			Expires: time.Now(),
+		})
+		c.Cookie(&fiber.Cookie{
+			Name:    "refresh_token",
+			Value:   "",
+			Expires: time.Now(),
+		})
 		return c.JSON(fiber.Map{
 			"error": []string{"//////   GateKeeper Says: Not Authorized   //////"},
 		})
@@ -42,6 +53,16 @@ func GateKeeper(c *fiber.Ctx) error {
 	dbresult := dbcontext.UserModel.FindOne(context.TODO(), bson.D{{Key: "email", Value: validatedToken.PrincipalEmail}}).Decode(&u)
 	if dbresult == mongo.ErrNoDocuments {
 		c.Status(fiber.StatusUnauthorized)
+		c.Cookie(&fiber.Cookie{
+			Name:    "access_token",
+			Value:   "",
+			Expires: time.Now(),
+		})
+		c.Cookie(&fiber.Cookie{
+			Name:    "refresh_token",
+			Value:   "",
+			Expires: time.Now(),
+		})
 		return c.JSON(fiber.Map{
 			"error": []string{"//////   GateKeeper Says: Not Authorized   //////"},
 		})

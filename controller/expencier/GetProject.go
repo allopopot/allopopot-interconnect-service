@@ -14,6 +14,7 @@ func GetProject(c *fiber.Ctx) error {
 	id := c.Query("pid", "")
 	skip := c.QueryInt("skip", 0)
 	limit := c.QueryInt("limit", 10)
+	search := c.Query("search")
 
 	if limit > 20 {
 		c.Status(fiber.StatusBadRequest)
@@ -22,6 +23,9 @@ func GetProject(c *fiber.Ctx) error {
 
 	var filter bson.D
 	filter = append(filter, bson.E{Key: "user_id", Value: c.Locals("user").(*models.User).ID})
+	if search != "" {
+		filter = append(filter, bson.E{Key: "$text", Value: bson.D{{Key: "$search", Value: search}}})
+	}
 
 	if id != "" {
 		idInObjectId, err := primitive.ObjectIDFromHex(id)
@@ -35,7 +39,7 @@ func GetProject(c *fiber.Ctx) error {
 	cursor, err := dbcontext.ExpencierProjectsModel.Find(c.Context(), filter, options.Find().SetSkip(int64(skip)).SetLimit(int64(limit)))
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{"error": []string{"Could not transactions in the project"}})
+		return c.JSON(fiber.Map{"error": []string{"Could not get projects"}})
 	}
 	defer cursor.Close(c.Context())
 
@@ -43,5 +47,11 @@ func GetProject(c *fiber.Ctx) error {
 	// var results []bson.M   // WARNING: ALTERNATE TO ABOVE STATEMENT
 	cursor.All(c.Context(), &results)
 
-	return c.JSON(fiber.Map{"data": results})
+	count, err := dbcontext.ExpencierProjectsModel.CountDocuments(c.Context(), filter)
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{"error": []string{"Could not get projects"}})
+	}
+
+	return c.JSON(fiber.Map{"data": results, "count": count})
 }

@@ -95,6 +95,7 @@ func (ac *AuthController) Login(c *fiber.Ctx) error {
 	refreshTokenExpiry := time.Now().Add(time.Minute * config.JWT_REFRESH_EXPIRY_MINUTES).UTC()
 
 	t := new(models.Token)
+	t.ID = u.ID
 	t.CreatedTime = time.Now()
 	t.Type = "refresh"
 	t.Token = signedStringRefreshToken

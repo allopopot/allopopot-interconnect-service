@@ -41,6 +41,12 @@ func SetCollections() {
 }
 
 func CreateIndexes() {
+	createUserModelIndexes()
+	createExpencierProjectsModelIndexes()
+	log.Println("Database Indexes Created Successfully")
+}
+
+func createUserModelIndexes() {
 	indexModel := mongo.IndexModel{
 		Keys:    bson.D{{Key: "email", Value: 1}},
 		Options: options.Index().SetUnique(true),
@@ -49,5 +55,15 @@ func CreateIndexes() {
 	if err != nil {
 		log.Panicln(err)
 	}
-	log.Println("Database Indexes Created Successfully")
+}
+
+func createExpencierProjectsModelIndexes() {
+	indexModel := mongo.IndexModel{
+		Keys:    bson.D{{Key: "name", Value: "text"}, {Key: "description", Value: "text"}},
+		Options: options.Index(),
+	}
+	_, err := ExpencierProjectsModel.Indexes().CreateOne(context.TODO(), indexModel)
+	if err != nil {
+		log.Panicln(err)
+	}
 }

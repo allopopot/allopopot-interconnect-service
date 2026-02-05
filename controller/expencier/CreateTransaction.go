@@ -76,6 +76,12 @@ func CreateTransaction(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"error": []string{"Could not create transaction"}})
 	}
 
+	_, err = dbcontext.ExpencierProjectsModel.UpdateOne(c.Context(), primitive.D{{Key: "_id", Value: projectID}}, primitive.D{{Key: "$inc", Value: primitive.D{{Key: "current_amount", Value: body.Amount}}}})
+	if err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{"error": []string{"Could not create transaction"}})
+	}
+
 	return c.JSON(fiber.Map{"data": newTransaction})
 
 }
