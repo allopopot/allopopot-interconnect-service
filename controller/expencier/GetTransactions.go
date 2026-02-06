@@ -3,6 +3,7 @@ package expencier
 import (
 	"allopopot-interconnect-service/dbcontext"
 	"allopopot-interconnect-service/models"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
@@ -13,6 +14,11 @@ func GetTransactions(c *fiber.Ctx) error {
 	id := c.Query("pid", "")
 	skip := c.QueryInt("skip", 0)
 	limit := c.QueryInt("limit", 10)
+	startdate := c.Query("startdate", "")
+	enddate := c.Query("enddate", "")
+
+	startDate, err := time.Parse("2006-01-02", startdate)
+	endDate, err := time.Parse("2006-01-02", enddate)
 
 	auth := c.Locals("user").(*models.User)
 
@@ -31,6 +37,12 @@ func GetTransactions(c *fiber.Ctx) error {
 	var filter bson.D
 	filter = append(filter, bson.E{Key: "user_id", Value: auth.ID})
 	filter = append(filter, bson.E{Key: "project_id", Value: projectID})
+	if startdate != "" {
+		filter = append(filter, bson.E{Key: "created_time", Value: bson.D{{Key: "$gte", Value: startDate}}})
+	}
+	if enddate != "" {
+		filter = append(filter, bson.E{Key: "created_time", Value: bson.D{{Key: "$lte", Value: endDate}}})
+	}
 
 	if id != "" {
 		idInObjectId, err := primitive.ObjectIDFromHex(id)
