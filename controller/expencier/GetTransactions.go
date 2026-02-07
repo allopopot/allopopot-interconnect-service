@@ -17,8 +17,8 @@ func GetTransactions(c *fiber.Ctx) error {
 	startdate := c.Query("startdate", "")
 	enddate := c.Query("enddate", "")
 
-	startDate, err := time.Parse("2006-01-02", startdate)
-	endDate, err := time.Parse("2006-01-02", enddate)
+	startDate, err := time.Parse(time.DateOnly, startdate)
+	endDate, err := time.Parse(time.DateOnly, enddate)
 
 	auth := c.Locals("user").(*models.User)
 

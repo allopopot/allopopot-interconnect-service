@@ -16,6 +16,7 @@ type CreateTransactionBody struct {
 	SubList     string  `json:"sub_list"`
 	Amount      float64 `json:"amount" validate:"required"`
 	Description string  `json:"description" validate:"required,min=3,max=100"`
+	EntryDate   string  `json:"entry_date" validate:""`
 }
 
 func (a *CreateTransactionBody) Validate() []string {
@@ -69,6 +70,14 @@ func CreateTransaction(c *fiber.Ctx) error {
 	newTransaction.Description = body.Description
 	newTransaction.SubList = body.SubList
 	newTransaction.CreatedTime = time.Now()
+
+	if body.EntryDate != "" {
+		newTransaction.CreatedTime, err = time.Parse(time.RFC3339, body.EntryDate)
+		if err != nil {
+			c.Status(fiber.StatusBadRequest)
+			return c.JSON(fiber.Map{"error": []string{"Could not parse date"}})
+		}
+	}
 
 	_, err = dbcontext.ExpencierTransactionsModel.InsertOne(c.Context(), newTransaction)
 	if err != nil {
