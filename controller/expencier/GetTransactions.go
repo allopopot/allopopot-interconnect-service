@@ -55,29 +55,29 @@ func GetTransactions(c *fiber.Ctx) error {
 
 	pipeline := bson.A{
 		bson.D{{Key: "$match", Value: filter}},
-		bson.D{
-			{Key: "$lookup",
-				Value: bson.D{
-					{Key: "from", Value: "expencier_projects"},
-					{Key: "localField", Value: "project_id"},
-					{Key: "foreignField", Value: "_id"},
-					{Key: "as", Value: "project"},
-					{Key: "pipeline",
-						Value: bson.A{
-							bson.D{
-								{Key: "$unset",
-									Value: bson.A{
-										"sub_lists",
-										"user_id",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		bson.D{{Key: "$set", Value: bson.D{{Key: "project", Value: bson.D{{Key: "$first", Value: "$project"}}}}}},
+		// bson.D{
+		// 	{Key: "$lookup",
+		// 		Value: bson.D{
+		// 			{Key: "from", Value: "expencier_projects"},
+		// 			{Key: "localField", Value: "project_id"},
+		// 			{Key: "foreignField", Value: "_id"},
+		// 			{Key: "as", Value: "project"},
+		// 			{Key: "pipeline",
+		// 				Value: bson.A{
+		// 					bson.D{
+		// 						{Key: "$unset",
+		// 							Value: bson.A{
+		// 								"sub_lists",
+		// 								"user_id",
+		// 							},
+		// 						},
+		// 					},
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// },
+		// bson.D{{Key: "$set", Value: bson.D{{Key: "project", Value: bson.D{{Key: "$first", Value: "$project"}}}}}},
 		bson.D{
 			{Key: "$facet",
 				Value: bson.D{
