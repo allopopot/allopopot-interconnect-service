@@ -55,6 +55,7 @@ func GetTransactions(c *fiber.Ctx) error {
 
 	pipeline := bson.A{
 		bson.D{{Key: "$match", Value: filter}},
+		bson.D{{Key: "$sort", Value: bson.D{{Key: "created_time", Value: 1}}}},
 		// bson.D{
 		// 	{Key: "$lookup",
 		// 		Value: bson.D{

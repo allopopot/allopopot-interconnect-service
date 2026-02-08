@@ -1,0 +1,20 @@
+meta {
+  name: Get Project Info
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/v1/expencier/project/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 6986c991046ded8132a66a4a
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

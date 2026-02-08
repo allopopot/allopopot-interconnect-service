@@ -13,6 +13,7 @@ func ExpencierRoutes(router fiber.Router) {
 
 	router.Post("/project", expencier.CreateProject)
 	router.Get("/project", expencier.GetProject)
+	router.Get("/project/:pid", expencier.GetProjectInfo)
 	router.Delete("/project/:pid", expencier.DeleteProject)
 	router.Patch("/project/:pid", expencier.EditProject)
 	router.Post("/project/:pid/transaction", expencier.CreateTransaction)

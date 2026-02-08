@@ -51,7 +51,6 @@ func CreateProject(c *fiber.Ctx) error {
 	project.Description = body.Description
 	project.UserId = auth.ID
 	project.CreatedTime = time.Now()
-	project.CurrentAmount = 0
 
 	_, err := dbcontext.ExpencierProjectsModel.InsertOne(c.Context(), project)
 
