@@ -5,6 +5,7 @@ import (
 	"allopopot-interconnect-service/models"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -16,6 +17,7 @@ type EditTransactionBody struct {
 	SubList     string  `json:"sub_list"`
 	Amount      float64 `json:"amount" validate:"required"`
 	Description string  `json:"description" validate:"required,min=3,max=100"`
+	EntryDate   string  `json:"entry_date" validate:""`
 }
 
 func (a *EditTransactionBody) Validate() []string {
@@ -46,6 +48,17 @@ func EditTransaction(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"error": validationResult})
 	}
 
+	var entryDate time.Time
+	if body.EntryDate != "" {
+		ed, err := time.Parse(time.RFC3339, body.EntryDate)
+		if err != nil {
+			c.Status(fiber.StatusBadRequest)
+			return c.JSON(fiber.Map{"error": []string{"Could not parse date"}})
+		} else {
+			entryDate = ed
+		}
+	}
+
 	id := c.Params("pid")
 	projectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -61,7 +74,7 @@ func EditTransaction(c *fiber.Ctx) error {
 	}
 
 	filter := bson.D{{Key: "_id", Value: transactionID}, {Key: "project_id", Value: projectID}, {Key: "user_id", Value: auth.ID}}
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "amount", Value: body.Amount}, {Key: "description", Value: body.Description}, {Key: "sub_list", Value: body.SubList}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "amount", Value: body.Amount}, {Key: "description", Value: body.Description}, {Key: "sub_list", Value: body.SubList}, {Key: "created_time", Value: entryDate}}}}
 
 	axResult, err := dbcontext.ExpencierTransactionsModel.UpdateOne(c.Context(), filter, update)
 
