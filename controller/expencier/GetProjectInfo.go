@@ -77,8 +77,15 @@ func GetProjectInfo(c *fiber.Ctx) error {
 	}
 	defer cursor.Close(c.Context())
 
+	sublist, err := dbcontext.ExpencierTransactionsModel.Distinct(c.Context(), "sub_list", filter)
+	if err != nil {
+		println(err.Error())
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{"error": []string{"Could not get transactions in the project"}})
+	}
+
 	var results []bson.M
 	cursor.All(c.Context(), &results)
 
-	return c.JSON(fiber.Map{"data": results})
+	return c.JSON(fiber.Map{"data": fiber.Map{"counts": results, "sub_lists": sublist}})
 }
